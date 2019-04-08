@@ -11,7 +11,7 @@ import org.junit.Test;
  */
 public class DepTreeDiffToolTest {
     @Test
-    public void testNoChanges() {
+    public void testNoChanges() throws Exception {
 
         TestDiffReporter reporter = runDiffTool(
                 new DependencyListBuilder()
@@ -28,10 +28,11 @@ public class DepTreeDiffToolTest {
         Assert.assertEquals(0, reporter.addedDepedencies.size());
         Assert.assertEquals(0, reporter.removedDependecies.size());
         Assert.assertEquals(0, reporter.majorVersionChanges.size());
+        Assert.assertTrue(reporter.doneCalled);
     }
 
     @Test
-    public void testAddedDeps() {
+    public void testAddedDeps() throws Exception {
         TestDiffReporter reporter = runDiffTool(
                 new DependencyListBuilder()
                         .addDependency("org.example:one:jar:1.2.3")
@@ -53,10 +54,11 @@ public class DepTreeDiffToolTest {
         Assert.assertEquals("org.x:one:jar:1.2.3", reporter.addedDepedencies.get(2));
         Assert.assertEquals(0, reporter.removedDependecies.size());
         Assert.assertEquals(0, reporter.majorVersionChanges.size());
+        Assert.assertTrue(reporter.doneCalled);
     }
 
     @Test
-    public void testRemovedDeps() {
+    public void testRemovedDeps() throws Exception {
         TestDiffReporter reporter = runDiffTool(
                 new DependencyListBuilder()
                         .addDependency("org.example:one:jar:1.2.3")
@@ -78,10 +80,11 @@ public class DepTreeDiffToolTest {
         Assert.assertEquals("org.example:c:jar:1.2.3:compile", reporter.removedDependecies.get(1));
         Assert.assertEquals("org.example:c:jar:classy:1.2.3:compile", reporter.removedDependecies.get(2));
         Assert.assertEquals(0, reporter.majorVersionChanges.size());
+        Assert.assertTrue(reporter.doneCalled);
     }
 
     @Test
-    public void testMajorVersionChanges() {
+    public void testMajorVersionChanges() throws Exception {
         TestDiffReporter reporter = runDiffTool(
                 new DependencyListBuilder()
                         .addDependency("org.example:one:jar:1.2.3")
@@ -109,9 +112,10 @@ public class DepTreeDiffToolTest {
         Assert.assertEquals("10.2.3", reporter.majorVersionChanges.get(1).getNewVersion());
         Assert.assertEquals("org.example:c:jar:classy:1.2.3:compile", reporter.majorVersionChanges.get(2).getOriginalGavString());
         Assert.assertEquals("3.2.3", reporter.majorVersionChanges.get(2).getNewVersion());
+        Assert.assertTrue(reporter.doneCalled);
     }
 
-    private TestDiffReporter runDiffTool(List<Dependency> originalDeps, List<Dependency> newDeps) {
+    private TestDiffReporter runDiffTool(List<Dependency> originalDeps, List<Dependency> newDeps) throws Exception {
         List<DepTreeDiffReporter> reporters = new ArrayList<>();
         reporters.add(new SystemOutReporter());
         TestDiffReporter testReporter = new TestDiffReporter();

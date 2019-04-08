@@ -10,6 +10,7 @@ public class TestDiffReporter implements DepTreeDiffReporter {
     List<String> addedDepedencies = new ArrayList<>();
     List<String> removedDependecies = new ArrayList<>();
     List<MajorVersionChange> majorVersionChanges = new ArrayList<>();
+    boolean doneCalled;
 
     @Override
     public void addNewDependency(String gav) {
@@ -28,7 +29,7 @@ public class TestDiffReporter implements DepTreeDiffReporter {
 
     @Override
     public void done() {
-
+        doneCalled = true;
     }
 }
 

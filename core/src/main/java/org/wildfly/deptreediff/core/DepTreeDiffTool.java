@@ -25,7 +25,7 @@ public class DepTreeDiffTool {
         this.newDeps = newDeps;
     }
 
-    void reportDiffs() {
+    void reportDiffs() throws Exception {
         List<Dependency> added = findAddedDependencies(originalDeps, newDeps);
         List<Dependency> removed = findRemovedDependencies(originalDeps, newDeps);
         List<MajorVersionChange> majorVersionChanges = findMajorVersionChanges(originalDeps, newDeps);
