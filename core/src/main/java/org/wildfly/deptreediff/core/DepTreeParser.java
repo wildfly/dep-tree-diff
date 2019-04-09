@@ -22,15 +22,9 @@ class DepTreeParser {
 
         // Read up to the plugin marker
         String line = reader.readLine();
-        while (line != null) {
-            if (line.contains(PLUGIN_NAME)) {
-                break;
-            }
-            line = reader.readLine();
+        if (line.contains("[INFO]")) {
+            throw new IllegalStateException("The format of the input file is wrong. It should be the output of `mvn dependency:tree -DoutputFile=<path-to-file>`");
         }
-
-        // Now we shuld have the dependencies
-        line = reader.readLine();
         if (line != null) {
             // Skip the owning project
             line = reader.readLine();
