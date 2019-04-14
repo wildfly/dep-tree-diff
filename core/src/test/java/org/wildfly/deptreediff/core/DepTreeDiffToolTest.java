@@ -1,7 +1,9 @@
 package org.wildfly.deptreediff.core;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -121,7 +123,12 @@ public class DepTreeDiffToolTest {
         TestDiffReporter testReporter = new TestDiffReporter();
         reporters.add(testReporter);
 
-        DepTreeDiffTool tool = new DepTreeDiffTool(reporters, originalDeps, newDeps);
+        Map<DependencyKey, Dependency> originalDepsMap = new LinkedHashMap<>();
+        originalDeps.forEach(d -> originalDepsMap.put(new DependencyKey(d), d));
+        Map<DependencyKey, Dependency> newDepsMap = new LinkedHashMap<>();
+        newDeps.forEach(d -> newDepsMap.put(new DependencyKey(d), d));
+
+        DepTreeDiffTool tool = new DepTreeDiffTool(reporters, originalDepsMap, newDepsMap);
         tool.reportDiffs();
 
         return testReporter;

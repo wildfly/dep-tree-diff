@@ -1,11 +1,15 @@
 package org.wildfly.deptreediff.core;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -16,13 +20,13 @@ import java.util.ServiceLoader;
 public class DepTreeDiffTool {
 
     private final List<DepTreeDiffReporter> reporters;
-    private final List<Dependency> originalDeps;
-    private final List<Dependency> newDeps;
+    private final Map<DependencyKey, Dependency> originalDeps;
+    private final Map<DependencyKey, Dependency> newDeps;
 
-    DepTreeDiffTool(List<DepTreeDiffReporter> reporters, List<Dependency> originalDeps, List<Dependency> newDeps) {
+    DepTreeDiffTool(List<DepTreeDiffReporter> reporters, Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
         this.reporters = reporters;
-        this.originalDeps = originalDeps;
-        this.newDeps = newDeps;
+        this.originalDeps = Collections.unmodifiableMap(originalDeps);
+        this.newDeps = Collections.unmodifiableMap(newDeps);
     }
 
     void reportDiffs() throws Exception {
@@ -45,27 +49,22 @@ public class DepTreeDiffTool {
 
     }
 
-    private List<Dependency> findAddedDependencies(List<Dependency> originalDeps, List<Dependency> newDeps) {
+    private List<Dependency> findAddedDependencies(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
         return findOnlyInLeft(newDeps, originalDeps);
     }
 
-    private List<Dependency> findRemovedDependencies(List<Dependency> originalDeps, List<Dependency> newDeps) {
+    private List<Dependency> findRemovedDependencies(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
         return findOnlyInLeft(originalDeps, newDeps);
     }
 
-    private List<MajorVersionChange> findMajorVersionChanges(List<Dependency> originalDeps, List<Dependency> newDeps) {
-        Map<DependencyKey, Dependency> map = new HashMap<>();
-        for (Dependency dependency : originalDeps) {
-            map.put(new DependencyKey(dependency), dependency);
-        }
-
-
+    private List<MajorVersionChange> findMajorVersionChanges(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
         List<MajorVersionChange> majorVersionChanges = new ArrayList<>();
-        for (Dependency newDep : newDeps) {
-            Dependency originalDep = map.get(new DependencyKey(newDep));
+        for (DependencyKey newKey : newDeps.keySet()) {
+            Dependency originalDep = originalDeps.get(newKey);
             if (originalDep == null) {
                 continue;
             }
+            Dependency newDep = newDeps.get(newKey);
             if (!newDep.getVersion().equalsMajorVersion(originalDep.getVersion())) {
                 majorVersionChanges.add(new MajorVersionChange(originalDep, newDep));
             }
@@ -75,23 +74,19 @@ public class DepTreeDiffTool {
         return majorVersionChanges;
     }
 
-    private List<Dependency> findOnlyInLeft(List<Dependency> left, List<Dependency> right) {
+    private List<Dependency> findOnlyInLeft(Map<DependencyKey, Dependency> left, Map<DependencyKey, Dependency> right) {
         List<Dependency> additions = new ArrayList<>();
-        Map<DependencyKey, Dependency> map = new HashMap<>();
-        for (Dependency dependency : right) {
-            map.put(new DependencyKey(dependency), dependency);
-        }
 
-        for (Dependency dependency : left) {
-            if (map.get(new DependencyKey(dependency)) == null) {
-                additions.add(dependency);
+        for (DependencyKey key : left.keySet()) {
+            if (right.get(key) == null) {
+                additions.add(left.get(key));
             }
         }
         additions.sort(Comparator.comparing(Dependency::getGavString));
         return additions;
     }
 
-    public static DepTreeDiffTool create(BufferedReader originalReader, BufferedReader newReader) throws IOException {
+    public static DepTreeDiffTool create(List<File> originalFiles, List<File> newFiles) throws IOException {
         List<DepTreeDiffReporter> reporters = new ArrayList<>();
         reporters.add(new SystemOutReporter());
 
@@ -101,76 +96,43 @@ public class DepTreeDiffTool {
             reporters.add(reporter);
         }
 
-        List<Dependency> originalDeps = new DepTreeParser(originalReader).parse();
-        List<Dependency> newDeps = new DepTreeParser(newReader).parse();
+        Map<DependencyKey, Dependency> originalDeps = parseDependencies(originalFiles);
+        Map<DependencyKey, Dependency> newDeps = parseDependencies(newFiles);
 
 
 
         return new DepTreeDiffTool(reporters, originalDeps, newDeps);
     }
 
-    private static class DependencyKey {
-        private final String groupId;
-        private final String artifactId;
-        private final String packaging;
-        private final String scope;
-        private final String classifier;
+    private static Map<DependencyKey, Dependency> parseDependencies(List<File> files) throws IOException {
+        Map<DependencyKey, Dependency> allDependencies = new LinkedHashMap<>();
+        Map<File, Map<DependencyKey, Dependency>> depsByFile = new LinkedHashMap<>();
+        for (File file : files) {
 
+            Map<DependencyKey, Dependency> depsForFile = new HashMap<>();
+            List<File> reverseKeys = new ArrayList<>(depsByFile.keySet());
+            Collections.reverse(reverseKeys);
 
-        public DependencyKey(Dependency dependency) {
-            this.groupId = dependency.getGroupId();
-            this.artifactId = dependency.getArtifactId();
-            this.packaging = dependency.getPackaging();
-            this.scope = dependency.getScope();
-            this.classifier = dependency.getClassifier();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                new DepTreeParser(reader).parse().forEach(d -> {
+                    DependencyKey key = new DependencyKey(d);
+                    if (allDependencies.put(key, d) != null) {
+                        // Find the already added one and warn
+                        for (File alreadyParsed : reverseKeys) {
+                            Dependency existing = depsByFile.get(alreadyParsed).get(key);
+                            if (existing != null) {
+                                System.out.println(
+                                        "WARN - '" + d.getGavString() + "' in '" + file + " was already found as '" +
+                                        existing + "' in '" + alreadyParsed + "'");
+                            }
+                        }
+                    }
+                    depsForFile.put(key, d);
+                });
+            }
+            depsByFile.put(file, depsForFile);
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            DependencyKey that = (DependencyKey) o;
-
-            if (!groupId.equals(that.groupId)) {
-                return false;
-            }
-            if (!artifactId.equals(that.artifactId)) {
-                return false;
-            }
-            if (scope != null) {
-                if (!scope.equals(that.scope)) {
-                    return false;
-                }
-            } else {
-                if (that.scope != null) {
-                    return false;
-                }
-            }
-            if (classifier != null) {
-                if (!classifier.equals(that.classifier)) {
-                    return false;
-                }
-            } else {
-                if (that.classifier != null) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = groupId.hashCode();
-            result = 31 * result + artifactId.hashCode();
-            if (scope != null) {
-                result = 31 * result + scope.hashCode();
-            }
-            if (classifier != null) {
-                result = 31 * result + classifier.hashCode();
-            }
-            return result;
-        }
+        return allDependencies;
     }
+
 }
