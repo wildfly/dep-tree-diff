@@ -122,9 +122,11 @@ public class DepTreeDiffTool {
                         for (File alreadyParsed : reverseKeys) {
                             Dependency existing = depsByFile.get(alreadyParsed).get(key);
                             if (existing != null) {
-                                System.out.println(
-                                        "WARN - '" + d.getGavString() + "' in '" + file + " was already found as '" +
-                                        existing + "' in '" + alreadyParsed + "'");
+                                if (!existing.getGavString().equals(d.getGavString())) {
+                                    System.out.println(
+                                            "WARN - '" + d.getGavString() + "' in '" + file + " was already found as '" +
+                                                    existing.getGavString() + "' in '" + alreadyParsed + "'. The last one (" + file.getName() + ") will be used for the comparison.");
+                                }
                             }
                         }
                     }
