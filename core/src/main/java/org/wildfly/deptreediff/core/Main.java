@@ -3,6 +3,7 @@ package org.wildfly.deptreediff.core;
 import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -10,6 +11,9 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) throws Exception  {
+        System.out.println(args.length);
+        System.out.println(Arrays.toString(args));
+
         if (args.length != 2) {
             throw new IllegalStateException("Usage: <original file path> <changed file path>");
         }
