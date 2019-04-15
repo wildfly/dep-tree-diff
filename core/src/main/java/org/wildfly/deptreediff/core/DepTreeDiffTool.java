@@ -99,7 +99,8 @@ public class DepTreeDiffTool {
         Map<DependencyKey, Dependency> originalDeps = parseDependencies(originalFiles);
         Map<DependencyKey, Dependency> newDeps = parseDependencies(newFiles);
 
-
+        System.out.println(originalDeps.size());
+        System.out.println(newDeps.size());
 
         return new DepTreeDiffTool(reporters, originalDeps, newDeps);
     }

@@ -1,6 +1,5 @@
 package org.wildfly.deptreediff.core;
 
-import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,9 +10,6 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) throws Exception  {
-        System.out.println(args.length);
-        System.out.println(Arrays.toString(args));
-
         if (args.length != 2) {
             throw new IllegalStateException("Usage: <original file path> <changed file path>");
         }
@@ -26,21 +22,15 @@ public class Main {
         tool.reportDiffs();
     }
 
-    private static void close(Closeable closeable) {
-        try {
-            closeable.close();
-        } catch (Exception ignore) {
-
-        }
-    }
-
     private static List<File> getFiles(String input) {
         List<File> files = new ArrayList<>();
-        for (String s : input.split(",")) {
+        String[] splitFiles = input.split(",");
+        for (String s : splitFiles) {
             File f = new File(s);
             if (!f.exists()) {
                 throw new IllegalStateException("File '" + f + " does not exist");
             }
+            files.add(f);
         }
         return files;
     }
