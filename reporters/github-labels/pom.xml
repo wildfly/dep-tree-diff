@@ -11,6 +11,12 @@
 
     <artifactId>dep-tree-reporter-github-labels</artifactId>
 
+    <properties>
+        <version.dmr>1.5.0.Final</version.dmr>
+
+        <version.plugin.shade>3.2.1</version.plugin.shade>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly.dep-tree-diff</groupId>
@@ -20,24 +26,27 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
-            <version>1.5.0.Final</version>
+            <version>${version.dmr}</version>
         </dependency>
     </dependencies>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${version.plugin.shade}</version>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
-                        <!-- here the phase you need -->
                         <phase>package</phase>
                         <goals>
-                            <goal>build-classpath</goal>
+                            <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <outputFile>target/classpath.txt</outputFile>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.wildfly.deptreediff.core.Main</mainClass>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
