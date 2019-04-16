@@ -77,6 +77,8 @@ echo "java -jar
     -Ddeptree.tool.reporter.github.deps-changed.label=$depsChangedLabel \
     -Ddeptree.tool.reporter.github.repo=$orgAndRepo \
     -Ddeptree.tool.reporter.github.pr=$prNumber  \
+    -Ddeptree.tool.reporter.github.token=--HIDDEN-- \
+    -Ddeptree.tool.reporter.github.trace=true \
     $toolRelativeUrl/reporters/github-labels/target/dep-tree-reporter-github-labels.jar \
     $baseVersionFiles $newVersionFiles"
 
