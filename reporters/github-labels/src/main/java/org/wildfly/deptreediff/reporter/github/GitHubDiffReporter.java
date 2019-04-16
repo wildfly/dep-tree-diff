@@ -139,7 +139,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
         }
 
         String mentions = System.getProperty(CHANGE_MENTIONS);
-        if (mentions != null) {
+        if (mentions != null && mentions.trim().length() > 0) {
             String[] parts = mentions.split(",");
             sb.append("\r\n");
             sb.append("CC");

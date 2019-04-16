@@ -32,6 +32,16 @@ echo "Change Mentions: " $TOOL_CHANGE_MENTIONS
 echo "Settings xml: " $TOOL_MVN_SETTINGS_XML
 echo
 
+mavenSettings=""
+if [ -z "$TOOL_MVN_SETTINGS_XML" ]; then
+    echo "no maven settings override"
+else
+    mvnCmd="$mvnCmd -s $TOOL_MVN_SETTINGS_XML ";
+    echo "Overriding maven command to use alternative maven settings:";
+    echo $mvnCmd;
+fi
+
+
 echo "Grabbing original dependencies"
 i=0
 newVersionFiles=""
