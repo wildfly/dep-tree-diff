@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
     // Format: <org>/<repo>
     private static final String REPOSITORY = "deptree.tool.reporter.github.repo";
     private static final String PULL_REQUEST = "deptree.tool.reporter.github.pr";
+    private static final String CHANGE_MENTIONS = "deptree.tool.reporter.github.change.mentions";
 
     List<String> newDependencies = new ArrayList<>();
     List<String> removedDependencies = new ArrayList<>();
@@ -109,7 +111,6 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
         if (TRACE) {
             System.out.println("Finished report. All done");
         }
-
     }
 
     String formatPrComment() {
@@ -136,6 +137,19 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
             }
             sb.append("\r\n");
         }
+
+        String mentions = System.getProperty(CHANGE_MENTIONS);
+        if (mentions != null) {
+            String[] parts = mentions.split(",");
+            sb.append("\r\n");
+            sb.append("CC");
+            for (String mention : parts) {
+                sb.append(" ");
+                sb.append(mention);
+            }
+            sb.append("\r\n");
+        }
+
         return sb.toString();
     }
 

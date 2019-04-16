@@ -14,6 +14,7 @@ prNumber=$6
 depsOkLabel=$7
 depsChangedLabel=$8
 token=$9
+changeMentions=${10}
 
 echo "=== Input variables: ==="
 echo "Git clone directory: " $originalDir
@@ -26,6 +27,7 @@ echo "Dependency Tree Modules: " $modules
 echo "PR Number: " $prNumber
 echo "Dependencies OK Label Name: " $depsOkLabel
 echo "Dependencies Changed Label Name: " $depsChangedLabel
+echo "Change Mentions: " $changeMentions
 echo "=== Input variables^ ==="
 
 
@@ -79,6 +81,7 @@ echo "java -jar
     -Ddeptree.tool.reporter.github.pr=$prNumber  \
     -Ddeptree.tool.reporter.github.token=--HIDDEN-- \
     -Ddeptree.tool.reporter.github.trace=true \
+    -Ddeptree.tool.reporter.github.change.mentions=$changeMentions \
     $toolRelativeUrl/reporters/github-labels/target/dep-tree-reporter-github-labels.jar \
     $baseVersionFiles $newVersionFiles"
 
@@ -89,5 +92,6 @@ java -jar \
     -Ddeptree.tool.reporter.github.pr=$prNumber  \
     -Ddeptree.tool.reporter.github.token=$token \
     -Ddeptree.tool.reporter.github.trace=true \
+    -Ddeptree.tool.reporter.github.change.mentions=$changeMentions \
     $toolRelativeUrl/reporters/github-labels/target/dep-tree-reporter-github-labels.jar \
     $baseVersionFiles $newVersionFiles
