@@ -27,9 +27,10 @@ echo "Dependency Tree Modules: " $modules
 echo "PR Number: " $prNumber
 echo "Dependencies OK Label Name: " $depsOkLabel
 echo "Dependencies Changed Label Name: " $depsChangedLabel
-echo "Change Mentions: " $changeMentions
-echo "=== Input variables^ ==="
-
+echo "=== Environment variables ==="
+echo "Change Mentions: " $TOOL_CHANGE_MENTIONS
+echo "Settings xml: " $TOOL_MVN_SETTINGS_XML
+echo
 
 echo "Grabbing original dependencies"
 i=0
