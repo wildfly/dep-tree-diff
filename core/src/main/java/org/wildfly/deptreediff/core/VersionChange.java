@@ -3,11 +3,11 @@ package org.wildfly.deptreediff.core;
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class MajorVersionChange {
+public class VersionChange {
     private final String gavString;
     private final String toVersion;
 
-    MajorVersionChange(Dependency original, Dependency changed) {
+    VersionChange(Dependency original, Dependency changed) {
         this.gavString = original.getGavString();
         this.toVersion = changed.getVersion().getVersion();
     }

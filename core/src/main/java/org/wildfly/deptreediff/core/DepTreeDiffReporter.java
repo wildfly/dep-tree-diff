@@ -8,7 +8,11 @@ public interface DepTreeDiffReporter {
 
     void addRemovedDependency(String gav) throws Exception;
 
-    void addMajorVersionUpgrade(MajorVersionChange change) throws Exception;
+    void addMajorVersionUpgrade(VersionChange change) throws Exception;
+
+    default void addMinorVersionUpgrade(VersionChange change) throws Exception {}
+
+    default void addMicroVersionUpgrade(VersionChange change) throws Exception {}
 
     void done() throws Exception;
 }

@@ -49,6 +49,27 @@ class DependencyVersion {
         return versionParts.get(0).equals(version1.versionParts.get(0));
     }
 
+    public boolean equalsMinorVersion(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DependencyVersion version1 = (DependencyVersion) o;
+        if (versionParts.size() == 1 && version1.versionParts.size() == 1) return true; // just major version present
+        if (versionParts.size() < 2  || version1.versionParts.size() < 2 ) return false;
+        return versionParts.get(1).equals(version1.versionParts.get(1));
+    }
+
+    public boolean equalsMicroVersion(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DependencyVersion version1 = (DependencyVersion) o;
+        if (versionParts.size() == 1 && version1.versionParts.size() == 1) return true; // just major version present
+        if (versionParts.size() == 2 && version1.versionParts.size() == 2) return true; // just minor version present
+        if (versionParts.size() < 3  || version1.versionParts.size() < 3 ) return false;
+        return versionParts.get(2).equals(version1.versionParts.get(2));
+    }
+
     static DependencyVersion parseVersion(String version) {
         String[] parts = version.split("\\.");
         return new DependencyVersion(version, Arrays.asList(parts));
