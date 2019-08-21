@@ -9,7 +9,7 @@ import java.util.List;
 public class TestDiffReporter implements DepTreeDiffReporter {
     List<String> addedDepedencies = new ArrayList<>();
     List<String> removedDependecies = new ArrayList<>();
-    List<MajorVersionChange> majorVersionChanges = new ArrayList<>();
+    List<VersionChange> majorVersionChanges = new ArrayList<>();
     boolean doneCalled;
 
     @Override
@@ -23,7 +23,7 @@ public class TestDiffReporter implements DepTreeDiffReporter {
     }
 
     @Override
-    public void addMajorVersionUpgrade(MajorVersionChange majorVersionChange) {
+    public void addMajorVersionUpgrade(VersionChange majorVersionChange) {
         majorVersionChanges.add(majorVersionChange);
     }
 

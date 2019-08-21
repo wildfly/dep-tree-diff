@@ -32,7 +32,9 @@ public class DepTreeDiffTool {
     void reportDiffs() throws Exception {
         List<Dependency> added = findAddedDependencies(originalDeps, newDeps);
         List<Dependency> removed = findRemovedDependencies(originalDeps, newDeps);
-        List<MajorVersionChange> majorVersionChanges = findMajorVersionChanges(originalDeps, newDeps);
+        List<VersionChange> majorVersionChanges = findMajorVersionChanges(originalDeps, newDeps);
+        List<VersionChange> minorVersionChanges = findMinorVersionChanges(originalDeps, newDeps);
+        List<VersionChange> microVersionChanges = findMicroVersionChanges(originalDeps, newDeps);
 
         for (DepTreeDiffReporter reporter : reporters) {
             for (Dependency dep : added) {
@@ -41,8 +43,14 @@ public class DepTreeDiffTool {
             for (Dependency dep : removed) {
                 reporter.addRemovedDependency(dep.getGavString());
             }
-            for (MajorVersionChange cmv : majorVersionChanges) {
+            for (VersionChange cmv : majorVersionChanges) {
                 reporter.addMajorVersionUpgrade(cmv);
+            }
+            for (VersionChange cmv : minorVersionChanges) {
+                reporter.addMinorVersionUpgrade(cmv);
+            }
+            for (VersionChange cmv : microVersionChanges) {
+                reporter.addMicroVersionUpgrade(cmv);
             }
             reporter.done();
         }
@@ -57,8 +65,8 @@ public class DepTreeDiffTool {
         return findOnlyInLeft(originalDeps, newDeps);
     }
 
-    private List<MajorVersionChange> findMajorVersionChanges(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
-        List<MajorVersionChange> majorVersionChanges = new ArrayList<>();
+    private List<VersionChange> findMajorVersionChanges(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
+        List<VersionChange> majorVersionChanges = new ArrayList<>();
         for (DependencyKey newKey : newDeps.keySet()) {
             Dependency originalDep = originalDeps.get(newKey);
             if (originalDep == null) {
@@ -66,12 +74,49 @@ public class DepTreeDiffTool {
             }
             Dependency newDep = newDeps.get(newKey);
             if (!newDep.getVersion().equalsMajorVersion(originalDep.getVersion())) {
-                majorVersionChanges.add(new MajorVersionChange(originalDep, newDep));
+                majorVersionChanges.add(new VersionChange(originalDep, newDep));
             }
         }
 
-        majorVersionChanges.sort(Comparator.comparing(MajorVersionChange::getOriginalGavString));
+        majorVersionChanges.sort(Comparator.comparing(VersionChange::getOriginalGavString));
         return majorVersionChanges;
+    }
+
+    private List<VersionChange> findMinorVersionChanges(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
+        List<VersionChange> minorVersionChanges = new ArrayList<>();
+        for (DependencyKey newKey : newDeps.keySet()) {
+            Dependency originalDep = originalDeps.get(newKey);
+            if (originalDep == null) {
+                continue;
+            }
+            Dependency newDep = newDeps.get(newKey);
+            if ( newDep.getVersion().equalsMajorVersion(originalDep.getVersion()) &&
+                    !newDep.getVersion().equalsMinorVersion(originalDep.getVersion()) ) {
+                minorVersionChanges.add(new VersionChange(originalDep, newDep));
+            }
+        }
+
+        minorVersionChanges.sort(Comparator.comparing(VersionChange::getOriginalGavString));
+        return minorVersionChanges;
+    }
+
+    private List<VersionChange> findMicroVersionChanges(Map<DependencyKey, Dependency> originalDeps, Map<DependencyKey, Dependency> newDeps) {
+        List<VersionChange> microVersionChanges = new ArrayList<>();
+        for (DependencyKey newKey : newDeps.keySet()) {
+            Dependency originalDep = originalDeps.get(newKey);
+            if (originalDep == null) {
+                continue;
+            }
+            Dependency newDep = newDeps.get(newKey);
+            if ( newDep.getVersion().equalsMajorVersion(originalDep.getVersion()) &&
+                    newDep.getVersion().equalsMinorVersion(originalDep.getVersion()) &&
+                    !newDep.getVersion().equalsMicroVersion(originalDep.getVersion()) ) {
+                microVersionChanges.add(new VersionChange(originalDep, newDep));
+            }
+        }
+
+        microVersionChanges.sort(Comparator.comparing(VersionChange::getOriginalGavString));
+        return microVersionChanges;
     }
 
     private List<Dependency> findOnlyInLeft(Map<DependencyKey, Dependency> left, Map<DependencyKey, Dependency> right) {

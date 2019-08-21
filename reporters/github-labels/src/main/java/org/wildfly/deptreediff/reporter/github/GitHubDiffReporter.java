@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.Set;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.deptreediff.core.DepTreeDiffReporter;
-import org.wildfly.deptreediff.core.MajorVersionChange;
+import org.wildfly.deptreediff.core.VersionChange;
 
 /**
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
@@ -38,7 +37,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
 
     List<String> newDependencies = new ArrayList<>();
     List<String> removedDependencies = new ArrayList<>();
-    List<MajorVersionChange> majorVersionChanges = new ArrayList<>();
+    List<VersionChange> majorVersionChanges = new ArrayList<>();
 
     @Override
     public void addNewDependency(String gav) {
@@ -57,7 +56,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
     }
 
     @Override
-    public void addMajorVersionUpgrade(MajorVersionChange change) {
+    public void addMajorVersionUpgrade(VersionChange change) {
         majorVersionChanges.add(change);
         if (TRACE) {
             System.out.println("Major Version " + change.getOriginalGavString() + " -> " + change.getNewVersion());
@@ -132,7 +131,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
         }
         if (majorVersionChanges.size() > 0) {
             sb.append("Major Version Changes:\r\n");
-            for (MajorVersionChange change : majorVersionChanges) {
+            for (VersionChange change : majorVersionChanges) {
                 sb.append("* " + change.getOriginalGavString() + " -> " + change.getNewVersion() + "\r\n");
             }
             sb.append("\r\n");
