@@ -34,6 +34,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
     private static final String REPOSITORY = "deptree.tool.reporter.github.repo";
     private static final String PULL_REQUEST = "deptree.tool.reporter.github.pr";
     private static final String CHANGE_MENTIONS = "deptree.tool.reporter.github.change.mentions";
+    private static final String SKIP_COMMENT_USER_CHECK = "deptree.tool.reporter.github.skip.comment.user.check";
 
     List<String> newDependencies = new ArrayList<>();
     List<String> removedDependencies = new ArrayList<>();
@@ -104,7 +105,10 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
         if (pr == null) {
             throw new IllegalStateException("No pull request number was provided. Supply it as -D" + PULL_REQUEST);
         }
-        GitHubApi api = new GitHubApi(token, depsOkLabel, depsChangedLabel, orgAndRepo, Integer.parseInt(pr));
+
+        boolean skipCommentUserCheck = System.getProperties().keySet().contains(SKIP_COMMENT_USER_CHECK) ? true : false;
+
+        GitHubApi api = new GitHubApi(token, depsOkLabel, depsChangedLabel, orgAndRepo, Integer.parseInt(pr), skipCommentUserCheck);
         api.createDependencyReport();
 
         if (TRACE) {
@@ -158,13 +162,15 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
         private final String depsChangedLabel;
         private final String orgAndRepo;
         private final int pr;
+        private final boolean skipCommentUserCheck;
 
-        public GitHubApi(String token, String depsOkLabel, String depsChangedLabel, String orgAndRepo, int pr) {
+        public GitHubApi(String token, String depsOkLabel, String depsChangedLabel, String orgAndRepo, int pr, boolean skipCommentUserCheck) {
             this.token = token;
             this.depsOkLabel = depsOkLabel;
             this.depsChangedLabel = depsChangedLabel;
             this.orgAndRepo = orgAndRepo;
             this.pr = pr;
+            this.skipCommentUserCheck = skipCommentUserCheck;
 
             if (TRACE) {
                 System.out.println("Creating GH reporter:");
@@ -341,9 +347,10 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
             if (TRACE) {
                 System.out.println("Looking for pull request comment");
             }
-            String myUserId = getMyUserId();
+            String myUserId = skipCommentUserCheck ? null : getMyUserId();
 
             ModelNode node = doGetAsModelNode("https://api.github.com/repos/" + orgAndRepo + "/issues/" + pr + "/comments");
+            System.out.println(node);
             if (node.getType() != ModelType.LIST) {
                 throw new IllegalStateException("Not a list: " + node);
             }
@@ -351,7 +358,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
 
             for (ModelNode comment : node.asList()) {
                 String userId = comment.get("user", "id").asString();
-                if (userId.equals(myUserId)) {
+                if (skipCommentUserCheck || userId.equals(myUserId)) {
                     String body = comment.get("body").asString();
                     if (body.startsWith(COMMENT_HEADER)) {
                         if (TRACE) {
