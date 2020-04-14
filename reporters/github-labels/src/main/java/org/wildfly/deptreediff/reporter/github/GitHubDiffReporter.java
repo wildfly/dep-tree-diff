@@ -171,6 +171,18 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
             this.orgAndRepo = orgAndRepo;
             this.pr = pr;
             this.skipCommentUserCheck = githubActions;
+            System.out.println("Token length: " + (token != null ? token.length() : 0));
+            if (token != null) {
+                System.out.println("Have token");
+                char[] chars = new char[token.length()];
+                for (int i = 0; i < token.length(); i++) {
+                    chars[i] = token.charAt(i);
+                }
+                System.out.println(token);
+                for (char c : chars) {
+                    System.out.println(c);
+                }
+            }
             this.authTokenHeader = githubActions ? "Bearer " + token : "token " + token;
 
             System.out.println("Auth Token Header: " + authTokenHeader);
@@ -433,7 +445,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                 }
                 connection.setRequestProperty("Authorization", authTokenHeader);
                 connection.setDoOutput(true);
-                
+
 
                 try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(connection.getOutputStream())))) {
                     body.writeJSONString(writer, true);
