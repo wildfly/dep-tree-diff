@@ -182,6 +182,12 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                 for (char c : chars) {
                     System.out.println(c);
                 }
+
+                System.out.println("Token:");
+                for (char c : chars) {
+                    System.out.print(c);
+                }
+                System.out.println();
             }
             this.authTokenHeader = githubActions ? "Bearer " + token : "token " + token;
 
