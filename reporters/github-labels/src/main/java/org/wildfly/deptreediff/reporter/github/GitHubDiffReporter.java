@@ -34,7 +34,8 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
     private static final String REPOSITORY = "deptree.tool.reporter.github.repo";
     private static final String PULL_REQUEST = "deptree.tool.reporter.github.pr";
     private static final String CHANGE_MENTIONS = "deptree.tool.reporter.github.change.mentions";
-    private static final String SKIP_COMMENT_USER_CHECK = "deptree.tool.reporter.github.skip.comment.user.check";
+    // Set to true if we're running on GitHub Actions, false (default) on TeamCity
+    private static final String GITHUB_ACTIONS = "deptree.tool.reporter.github.actions";
 
     List<String> newDependencies = new ArrayList<>();
     List<String> removedDependencies = new ArrayList<>();
@@ -106,9 +107,9 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
             throw new IllegalStateException("No pull request number was provided. Supply it as -D" + PULL_REQUEST);
         }
 
-        boolean skipCommentUserCheck = System.getProperties().keySet().contains(SKIP_COMMENT_USER_CHECK) ? true : false;
+        boolean githubActions = System.getProperties().keySet().contains(GITHUB_ACTIONS) ? true : false;
 
-        GitHubApi api = new GitHubApi(token, depsOkLabel, depsChangedLabel, orgAndRepo, Integer.parseInt(pr), skipCommentUserCheck);
+        GitHubApi api = new GitHubApi(token, depsOkLabel, depsChangedLabel, orgAndRepo, Integer.parseInt(pr), githubActions);
         api.createDependencyReport();
 
         if (TRACE) {
@@ -157,20 +158,20 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
     }
 
     private class GitHubApi {
-        private final String token;
         private final String depsOkLabel;
         private final String depsChangedLabel;
         private final String orgAndRepo;
         private final int pr;
         private final boolean skipCommentUserCheck;
+        private final String authTokenHeader;
 
-        public GitHubApi(String token, String depsOkLabel, String depsChangedLabel, String orgAndRepo, int pr, boolean skipCommentUserCheck) {
-            this.token = token;
+        public GitHubApi(String token, String depsOkLabel, String depsChangedLabel, String orgAndRepo, int pr, boolean githubActions) {
             this.depsOkLabel = depsOkLabel;
             this.depsChangedLabel = depsChangedLabel;
             this.orgAndRepo = orgAndRepo;
             this.pr = pr;
-            this.skipCommentUserCheck = skipCommentUserCheck;
+            this.skipCommentUserCheck = githubActions;
+            this.authTokenHeader = githubActions ? "Bearer " + token : "token " + token;
 
             if (TRACE) {
                 System.out.println("Creating GH reporter:");
@@ -179,6 +180,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                 System.out.println("- Deps Changed Label Name: " + depsChangedLabel);
                 System.out.println("- Org/Repo: " + orgAndRepo);
                 System.out.println("- PR #: " + pr);
+                System.out.println("- GitHub Actions: " + githubActions);
             }
         }
 
@@ -219,7 +221,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                         (HttpURLConnection)new URL(url).openConnection();
                 try {
                     connection.setRequestMethod("DELETE");
-                    connection.setRequestProperty("Authorization", "token " + token);
+                    connection.setRequestProperty("Authorization", authTokenHeader);
 
                     int responseCode = connection.getResponseCode();
                     if (responseCode / 100 != 2) {
@@ -331,7 +333,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                     (HttpURLConnection)new URL(url).openConnection();
             try {
                 connection.setRequestMethod("DELETE");
-                connection.setRequestProperty("Authorization", "token " + token);
+                connection.setRequestProperty("Authorization", authTokenHeader);
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode / 100 != 2) {
@@ -386,7 +388,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
             HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
             try {
                 connection.setRequestMethod("GET");
-                connection.setRequestProperty("Authorization", "token " + token);
+                connection.setRequestProperty("Authorization", authTokenHeader);
 
                 int responseCode = connection.getResponseCode();
                 if (responseCode != 200) {
@@ -425,7 +427,7 @@ public class GitHubDiffReporter implements DepTreeDiffReporter {
                 } else {
                     connection.setRequestMethod(method);
                 }
-                connection.setRequestProperty("Authorization", "token " + token);
+                connection.setRequestProperty("Authorization", authTokenHeader);
                 connection.setDoOutput(true);
 
                 try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(connection.getOutputStream())))) {
