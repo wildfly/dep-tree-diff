@@ -6,7 +6,7 @@
 
     <groupId>org.wildfly.dep-tree-diff</groupId>
     <artifactId>dep-tree-diff</artifactId>
-    <version>1.0.2.Final</version>
+    <version>1.0.3.Final-SNAPSHOT</version>
     <modules>
         <module>core</module>
         <module>reporters</module>
