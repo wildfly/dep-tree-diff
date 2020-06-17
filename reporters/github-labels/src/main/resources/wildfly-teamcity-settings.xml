@@ -55,7 +55,7 @@
                 <repository>
                     <id>brontes-mirror</id>
                     <name>Brontes mirror</name>
-                    <url>https://repository.ci.wildfly.org/content/groups/public/</url>
+                    <url>http://repository.ci.wildfly.org/content/groups/public/</url>
                     <layout>default</layout>
                     <releases>
                         <enabled>true</enabled>
@@ -71,7 +71,7 @@
                 <pluginRepository>
                     <id>brontes-mirror</id>
                     <name>Brontes mirror</name>
-                    <url>https://repository.ci.wildfly.org/content/groups/public/</url>
+                    <url>http://repository.ci.wildfly.org/content/groups/public/</url>
                     <layout>default</layout>
                     <releases>
                         <enabled>true</enabled>
