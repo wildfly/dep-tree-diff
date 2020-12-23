@@ -1,0 +1,27 @@
+name: 'Dependency Tree Diff'
+description: 'Displays differences in the dependencies resulting from a pull request'
+inputs:
+  token:
+    description: 'A GitHub token that can be used to authorise commenting on and labelling the pull requests'
+    required: true
+  modules:
+    description: 'Comma-separated list of maven modules to be used to check the full dependency set'
+    required: true
+  deps-ok-label:
+    description: 'Name of the label to add to pull requests that have no significant version changes'
+    required: true
+  deps-changed-label:
+    description: 'Name of the label to add to pull requests that have a significant version change'
+    required: true
+  tool-change-mentions:
+    description: 'GitHub user names in @mention format to be used in comments where versions changed'
+runs:
+  using: 'docker'
+  # image: 'Dockerfile'
+  image: 'docker://quay.io/kabirk/dep-tree-diff:latest'
+  args:
+    - ${{ inputs.token }}
+    - ${{ inputs.modules }}
+    - ${{ inputs.deps-ok-label }}
+    - ${{ inputs.deps-changed-label }}
+    - ${{ inputs.tool-change-mentions }}
