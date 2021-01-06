@@ -3,7 +3,7 @@
 # Get the variables
 pr=$(jq --raw-output .pull_request "$GITHUB_EVENT_PATH")
 if [ "${pr}" = "null" ]; then
-  pr=$(jq --raw-output .event.workflow_run.pull_requests[0].number "$GITHUB_EVENT_PATH")
+  pr=$(jq --raw-output .workflow_run.pull_requests[0].number "$GITHUB_EVENT_PATH")
   if [ "${pr}" = "null" ]; then
     echo This does not seem to be a pull request!
     exit 1
