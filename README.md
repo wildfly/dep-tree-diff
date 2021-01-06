@@ -19,7 +19,7 @@ By default this app only outputs things to System.out.println(). It is extensibl
 This is also available as a GitHub Action. See the [Example Workflow Yaml](example-workflow.yml) for how to use it, and
 the [Action Yaml](action.yml) for some information about the parameters.
 
-Note that the example Yaml does the cloning of the two versions of the pull request being tested, and a build of each before calling the this action. This is mainly to take advantage of the Maven Repository caching available when doing it this way.
+Note that the example Yaml does the cloning of the two versions of the pull request being tested, and a build of each before calling the this action from the (example-workflow.yml) workflow triggered by the `workflow_run` event once the main workflow completes. This is mainly to take advantage of the Maven Repository caching available when doing it this way.
 
 ## Releasing the Action
 
