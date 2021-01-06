@@ -11,7 +11,7 @@ if [ "${pr}" = "null" ]; then
 fi
 
 orgAndRepo="${GITHUB_REPOSITORY}"
-prNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+prNumber=${pr}
 token="${1}"
 depsOkLabel="${2}"
 depsChangedLabel="${3}"
