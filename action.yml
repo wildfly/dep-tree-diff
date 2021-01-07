@@ -1,6 +1,9 @@
 name: 'Dependency Tree Diff'
 description: 'Displays differences in the dependencies resulting from a pull request'
 inputs:
+  pr:
+    description: 'The number of the PR to check dependencies for'
+    required: true
   token:
     description: 'A GitHub token that can be used to authorise commenting on and labelling the pull requests'
     required: true
@@ -23,6 +26,7 @@ runs:
   # image: 'Dockerfile'
   image: 'docker://quay.io/kabirk/dep-tree-diff:latest'
   args:
+    - ${{ inputs.pr }}
     - ${{ inputs.token }}
     - ${{ inputs.deps-ok-label }}
     - ${{ inputs.deps-changed-label }}

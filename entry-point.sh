@@ -1,23 +1,13 @@
 #!/bin/sh
 
-# Get the variables
-pr=$(jq --raw-output .pull_request "$GITHUB_EVENT_PATH")
-if [ "${pr}" = "null" ]; then
-  pr=$(jq --raw-output .workflow_run.pull_requests[0].number "$GITHUB_EVENT_PATH")
-  if [ "${pr}" = "null" ]; then
-    echo This does not seem to be a pull request!
-    exit 1
-  fi
-fi
-
 orgAndRepo="${GITHUB_REPOSITORY}"
-prNumber=${pr}
-token="${1}"
-depsOkLabel="${2}"
-depsChangedLabel="${3}"
-changeCommentMentions="${4}"
-baseVersionFiles="${5}"
-newVersionFiles="${6}"
+prNumber=${1}
+token="${2}"
+depsOkLabel="${3}"
+depsChangedLabel="${4}"
+changeCommentMentions="${5}"
+baseVersionFiles="${6}"
+newVersionFiles="${7}"
 
 echo "=== Input variables: ==="
 echo "token: ${token}"
